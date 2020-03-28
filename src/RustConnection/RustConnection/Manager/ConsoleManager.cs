@@ -126,10 +126,14 @@ namespace RustConnection.Manager
         public class ConsoleCommandAttribute : Attribute
         {
             public string Command { get; private set; } = null;
+            public string Syntax { get; private set; } = null;
+            public string Description { get; private set; } = null;
 
-            public ConsoleCommandAttribute(string command)
+            public ConsoleCommandAttribute(string command, string syntax = null, string description = null)
             {
                 this.Command = command;
+                this.Syntax = syntax;
+                this.Description = description;
             }
         }
 
