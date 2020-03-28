@@ -43,5 +43,19 @@ namespace RustConnection.ConsoleCommands
             
             NetworkManager.Instance.Connect(ex[0], port);
         }
+
+        [ConsoleManager.ConsoleCommandAttribute("disconnect")]
+        static void DisconnectCommand(string command, string[] args)
+        {
+            if (NetworkManager.Instance.HaveConnection == false)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("[ConsoleCommand] <connect> You not have connection!");
+                Console.ResetColor();
+                return;
+            }
+            
+            NetworkManager.Instance.BaseClient.Disconnect("Disconnected!", true);
+        }
     }
 }
