@@ -6,13 +6,13 @@ namespace RustConnection.ConsoleCommands
 {
     class Global
     {
-        [ConsoleManager.ConsoleCommandAttribute("exit")]
+        [ConsoleManager.ConsoleCommandAttribute("exit", "exit", "Close this application")]
         static void ExitCommand(string command, string[] args)
         {
             AppManager.Instance.IsWork = false;
         }
 
-        [ConsoleManager.ConsoleCommandAttribute("help")]
+        [ConsoleManager.ConsoleCommandAttribute("help", "help", "Show all application commands")]
         static void HelpCommand(string command, string[] args)
         {
             Console.WriteLine("### List commands:");

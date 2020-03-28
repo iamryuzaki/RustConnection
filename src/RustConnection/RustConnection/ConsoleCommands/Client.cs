@@ -5,7 +5,7 @@ namespace RustConnection.ConsoleCommands
 {
     public class Client
     {
-        [ConsoleManager.ConsoleCommandAttribute("connect")]
+        [ConsoleManager.ConsoleCommandAttribute("connect", "connect {ip:port}", "Connect to game server")]
         static void ConnectCommand(string command, string[] args)
         {
             if (NetworkManager.Instance.HaveConnection == true)
@@ -44,7 +44,7 @@ namespace RustConnection.ConsoleCommands
             NetworkManager.Instance.Connect(ex[0], port);
         }
 
-        [ConsoleManager.ConsoleCommandAttribute("disconnect")]
+        [ConsoleManager.ConsoleCommandAttribute("disconnect", "disconnect", "Disconnect from this game server")]
         static void DisconnectCommand(string command, string[] args)
         {
             if (NetworkManager.Instance.HaveConnection == false)
