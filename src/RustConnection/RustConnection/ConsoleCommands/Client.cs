@@ -6,7 +6,7 @@ namespace RustConnection.ConsoleCommands
     public class Client
     {
         [ConsoleManager.ConsoleCommandAttribute("connect")]
-        static void ExitCommand(string command, string[] args)
+        static void ConnectCommand(string command, string[] args)
         {
             if (NetworkManager.Instance.HaveConnection == true)
             {
