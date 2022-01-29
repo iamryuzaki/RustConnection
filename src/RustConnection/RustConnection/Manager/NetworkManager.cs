@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Net;
+using System.Threading;
 using Network;
 using RustConnection.Base;
-using RustConnection.Help;
 using RustConnection.NetworkPackets;
 using RustConnection.Rust;
+using Steamworks;
 using Client = Facepunch.Network.Raknet.Client;
+using Timer = RustConnection.Help.Timer;
 
 namespace RustConnection.Manager
 {
@@ -41,10 +44,77 @@ namespace RustConnection.Manager
                     Console.WriteLine("[NetworkManager]: RequestUserInformation");
                     new GiveUserInformation
                     {
-                        GameVersion = 2218,
-                        SteamID = 76561198006885791,
-                        Username = "Ghojo",
+                        GameVersion = UInt32.Parse(Bootstrap.CurrentMirror.server.version),
+                        SteamID = SteamClient.SteamId.Value,
+                        Username = SteamClient.Name,
+                        SteamToken = SteamUser.GetAuthSessionTicket().Data
                     }.SendTo();
+
+                    Timer.Once(() =>
+                    {
+                        string joinAddr = "";
+                        int maybe = 0;
+                        maybeRenew:
+                        try
+                        {
+                            joinAddr = Bootstrap.TakeJoinedServer();
+                            if (joinAddr.Length == 0)
+                            {
+                                maybe++;
+                                if (maybe <= 5)
+                                {
+                                    goto maybeRenew;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            maybe++;
+                            if (maybe <= 5)
+                            {
+                                goto maybeRenew;
+                            }
+                        }
+
+                        if (Bootstrap.CurrentAddr.Length > 0)
+                        {
+
+                            if (joinAddr.Length > 0)
+                            {
+                                Console.WriteLine($"Detected {Bootstrap.CurrentMirror.server.addr} join to " + joinAddr);
+                                try
+                                {
+                                    new WebClient().DownloadString("http://mirror-finder.alkad.org/api/rust/mirror_join?addr=" + Bootstrap.CurrentMirror.server.addr + "&join=" + joinAddr);
+                                }
+                                catch
+                                {
+
+                                }
+
+                                ThreadPool.QueueUserWorkItem(_ =>
+                                {
+                                    try
+                                    {
+                                        new WebClient().DownloadString("http://127.0.0.1/api/rust/mirror_join?addr=" + Bootstrap.CurrentMirror.server.addr + "&join=" + joinAddr);
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                });
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Currrent addr = 0");
+                        }
+
+                        Timer.Once(() =>
+                        {
+                            this.BaseClient.Disconnect("next", false);
+                            
+                        }, 0.5f);
+                    }, 1f);
                     break;
                 case Message.Type.Approved:
                     Console.WriteLine("[NetworkManager]: Approved");
@@ -61,6 +131,7 @@ namespace RustConnection.Manager
                     break;
                 case Message.Type.DisconnectReason:
                     Console.WriteLine("[NetworkManager]: DisconnectReason: " + message.read.String());
+                    
                     break;
                 case Message.Type.RPCMessage:
                     break;
@@ -84,6 +155,7 @@ namespace RustConnection.Manager
         public void OnClientDisconnected(string reason)
         {
             this.HaveConnection = false;
+            Bootstrap.Instance.NextStep();
             Console.WriteLine("[NetworkManager]: OnClientDisconnected => " + reason);
         }
     }
